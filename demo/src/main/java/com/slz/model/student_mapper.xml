@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="test">
+    <select id="selectAll" resultType="com.slz.model.Student">
+        select * from student;
+    </select>
+    <insert id="insert">
+        insert into student
+        values (default, '张龙', 25, '女');
+    </insert>
+    <insert id="insertObject" parameterType="com.slz.model.Student">
+        insert into student values (default, #{name}, #{age}, #{gender});
+    </insert>
+    <insert id="insertObject1" parameterType="com.slz.model.Student">
+        insert into student values (default, '${name}', ${age}, '${gender}');
+    </insert>
+    <insert id="insertAndGetId" parameterType="com.slz.model.Student">
+        <selectKey keyProperty="id" keyColumn="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID();
+        </selectKey>
+        insert into student values (default, #{name}, #{age}, #{gender});
+    </insert>
+    <delete id="delete" parameterType="int">
+        delete from student where id=#{id}
+    </delete>
+    <update id="update" parameterType="com.slz.model.Student">
+        update student set `name`=#{name}, age=#{age}, gender=#{gender} where id=#{id};
+    </update>
+    <select id="selectList" resultType="com.slz.model.Student">
+       select * from student;
+    </select>
+    <select id="selectById" resultType="com.slz.model.Student" parameterType="int">
+        select * from student where id=#{id}
+    </select>
+</mapper>
