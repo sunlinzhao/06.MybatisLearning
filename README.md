@@ -456,19 +456,130 @@ public class TestSelect {
 
 # 三、DAO & Mapper
 
+## 1. DAO
 
+![image.png](assets/image19.png)
 
+- DAO 接口
 
+```java
+public interface StudentDao {
+    default SqlSession getSqlSession() { // 默认手动提交事务
+        try {
+            return new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    default SqlSession getSqlSession(Boolean isAuto) {
+        try {
+            return new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession(isAuto);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    int save(Student student);
+    int delete(int id);
+    int update(Student student);
+    List<Student> selectList();
+    Student selectId(int id);
+}
+```
 
+- DAO 实现类
 
+```java
+public class StudentDaoImpl implements StudentDao {
 
+    @Override
+    public int save(Student student) {
+        SqlSession session = getSqlSession();
+        int i = session.insert("save", student);
+        session.commit();
+        session.close();
+        return i;
+    }
 
+    @Override
+    public int delete(int id) {
+        SqlSession session = getSqlSession();
+        int i = session.delete("delete", id);
+        session.commit();
+        session.close();
+        return i;
+    }
 
+    @Override
+    public int update(Student student) {
+        SqlSession session = getSqlSession();
+        int i = session.update("update", student);
+        session.commit();
+        session.close();
+        return i;
+    }
 
+    @Override
+    public List<Student> selectList() {  // 查询不需要 commit Tx
+        SqlSession session = getSqlSession();
+        List<Student> selectList = session.selectList("selectList");
+        session.close();
+        return selectList;
+    }
 
+    @Override
+    public Student selectId(int id) {
+        SqlSession session = getSqlSession();
+        Student selectId = session.selectOne("selectId", id);
+        session.close();
+        return selectId;
+    }
+}
+```
 
+## 2. Mapper ❤️
 
+> 允许程序员只编写接口，而不需要编写实现类。由 mybatis 自动生成一个代理实现类，操纵接口中的方法。
 
+要求：
 
+1. mapper.xml 文件中 namespace 必须是接口的全路径；
 
-++++++++++++++++++++++++++++++
+![image.png](assets/image20.png)
+
+2. 接口中的方法名必须和 mapper.xml 文件中的 statementId 相同；
+
+![image.png](assets/image21.png)
+
+3. 接口中的方法参数必须和 mapper.xml 文件中 parameterType 相同；
+4. 接口中的方法返回值类型必须和 mapper.xml 文件中 resultType 匹配；
+5. 在 config.xml 文件中配置 mapper，可以通过配置包的方式实现：要求 mapper.xml 和 mapper 接口在同一个包下，且同名；
+
+```xml
+    <mappers>
+<!--        <mapper resource="com/slz/mapper/StudentMapper.xml"></mapper>-->
+        <package name="com.slz.mapper"/>
+    </mappers>
+```
+
+![image.png](assets/image22.png)
+
+测试程序：
+
+![image.png](assets/imag23.png)
+
+## 3. Mybatis 配置类的别名
+
+在 config.xml 中配置：
+
+```xml
+    <!-- 配置别名-->
+    <typeAliases>
+<!--        <typeAlias type="com.slz.model.Student" alias="Student"></typeAlias>-->
+        <!--别名就是类名，且不区分大小写-->
+        <package name="com.slz.model"/>
+    </typeAliases>
+```
+
+配置之后，在 mapper.xml 中就可以只写别名：
+
+![image.png](assets/image24.png)

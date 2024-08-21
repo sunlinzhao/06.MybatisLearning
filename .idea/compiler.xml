@@ -8,6 +8,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="demo" />
+        <module name="mybatis-mapper" />
+        <module name="mybatix-dao" />
       </profile>
     </annotationProcessing>
   </component>
