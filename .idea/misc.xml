@@ -7,6 +7,8 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/demo/pom.xml" />
         <option value="$PROJECT_DIR$/mybatis-mapper/pom.xml" />
+        <option value="$PROJECT_DIR$/mybatis-impl/pom.xml" />
+        <option value="$PROJECT_DIR$/mybatix-dao/pom.xml" />
       </list>
     </option>
   </component>

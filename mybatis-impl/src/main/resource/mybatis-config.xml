@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--这个声明注释掉，我们自己解析该 XML 文件-->
+<!--<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"-->
+<!--        "http://mybatis.org/dtd/mybatis-3-config.dtd">-->
+<configuration>
+    <environments default="dev">
+        <environment id="dev">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <!--&amp; 相当于一个 & ，这里需要采用此方法来转义-->
+                <property name="url" value="jdbc:mysql://8.130.102.188:3306/Mybatis?rewriteBatchStatements=true&amp;serverTimeZone=GMT%2B8&amp;useSSL=false"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="com/slz/mybatis/mapper/StudentMapper.xml"></mapper>
+    </mappers>
+</configuration>
