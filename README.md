@@ -454,7 +454,7 @@ public class TestSelect {
 }
 ```
 
-# 三、DAO & Mapper
+# 三、Mybatis 使用 DAO 或者 Mapper 方式
 
 ## 1. DAO
 
@@ -583,3 +583,306 @@ public class StudentDaoImpl implements StudentDao {
 配置之后，在 mapper.xml 中就可以只写别名：
 
 ![image.png](assets/image24.png)
+
+# 四、Mybatis 使用注解方式
+
+结构：
+
+![image.png](assets/image27.png)
+
+mapper 接口：
+
+```java
+public interface StudentMapper {
+    @Insert("intser into student values(default, #{name}, #{age}, #{gender})")
+    int save(Student student);
+    @Delete("delete from student where id=#{id}")
+    int delete(int id);
+    @Update("update student set `name`=#{name}, age=#{age}, gender=#{gender} where id=#{id}")
+    int update(Student student);
+    @Select("select * from student order by age")
+    List<Student> selectList();
+    @Select("select * from student where id=#{id}")
+    Student selectById(int id);
+}
+```
+
+配置 config.xml 文件：
+
+![image.png](assets/image28.png)
+
+# 五、动态拼接 Sql
+
+## 1. if
+
+> if, 执行多分支的0个或者多个
+
+```xml
+    <select id="selectCondition" resultType="Student" parameterType="Student">
+            select * from student where 1=1
+            <if test="name!=null and name!=''">
+                and name like '%'#{name}'%'
+            </if>
+            <if test="age!=null and age!=0">
+                and age=#{age}
+            </if>
+            <if test="gender!=null and gender!=''">
+                and gender=#{gender}
+            </if>
+    </select>
+```
+
+## 2. choose-when-otherwise
+
+> 类似于 switch ，只执行多分支其中的一个
+
+```xml
+    <select id="selectConditionChoose" resultType="com.slz.dynamic.model.Student">
+            select * from student where 1=1
+            <choose>
+                <when test="name!=null and name!=''">
+                    and name like '%'#{name}'%'
+                </when>
+                <when test="age!=null and age!=0">
+                    and age=#{age}
+                </when>
+                <when test="gender!=null and gender!=''">
+                    and gender=#{gender}
+                </when>
+                <otherwise>
+                    order by age
+                </otherwise>
+            </choose>
+    </select>
+```
+
+## 3. where
+
+> 将判断条件放在 where 标签内，防止 where 和 and 直接拼接引发的错误
+
+```xml
+    <select id="selectConditionWhere" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <where>
+            <if test="name!=null and name!=''">
+                and name like '%'#{name}'%'
+            </if>
+            <if test="age!=null and age!=0">
+                and age=#{age}
+            </if>
+            <if test="gender!=null and gender!=''">
+                and gender=#{gender}
+            </if>
+        </where>
+    </select>
+```
+
+## 4. trim
+
+> trim 用于在该标签内语句前后，添加/删除 前缀/后缀；
+>
+> trim 标签内的条件判断在命中条件时，prefix 属性是添加 where，prefixOverrides 属性去掉 where 之后的 and；
+
+```xml
+    <select id="selectConditionTrim" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name!=null and name!=''">
+                and name like '%'#{name}'%'
+            </if>
+            <if test="age!=null and age!=0">
+                and age=#{age}
+            </if>
+            <if test="gender!=null and gender!=''">
+                and gender=#{gender}
+            </if>
+        </trim>
+    </select>
+```
+
+## 5. set
+
+```xml
+    <update id="update" parameterType="com.slz.dynamic.model.Student">
+        update student
+        <set>
+            <if test="name!=null">`name`=#{name},</if>
+            <if test="age!=null and age!=0">age=#{age},</if>
+            <if test="gender!=null">gender=#{gender}</if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="updateTrim" parameterType="com.slz.dynamic.model.Student">
+        update student
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null">`name`=#{name},</if>
+            <if test="age!=null and age!=0">age=#{age},</if>
+            <if test="gender!=null">gender=#{gender}</if>
+        </trim>
+        where id = #{id}
+    </update>
+```
+
+## 6. forEach
+
+### (1) 批量删除
+
+#### a. 数组方式
+
+![image.png](assets/image29.png)
+
+```xml
+    <delete id="deleteCheck" >
+        delete
+        from student
+        <where>
+            <foreach collection="array" item="id" open="and id in(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where> 
+    </delete>
+```
+
+![image.png](assets/image30.png?t=1724396743693)
+
+```xml
+    <delete id="deleteCheckOr" >
+        delete
+        from student
+        <where>
+            <foreach collection="array" item="sid" open="and (" close=")" separator="or">
+                id=#{sid}
+            </foreach>
+        </where>
+    </delete>
+```
+
+![image.png](assets/image32.png?t=1724396766745)
+
+#### b. 集合方式
+
+```xml
+    <delete id="deleteCheckList" >
+        delete
+        from student
+        <where>
+            <foreach collection="list" item="sid" open="and (" close=")" separator="or">
+                id=#{sid}
+            </foreach>
+        </where>
+    </delete>
+```
+
+![image.png](assets/image33.png)
+
+### (2) 批量插入
+
+> ❗️不适合大数据量和字段非常多的数据，资源消耗非常大
+
+![image.png](assets/image35.png)
+
+```xml
+    <insert id="insertBatch">
+        insert into student values
+        <foreach collection="list" item="stu" separator=",">
+            (default, #{stu.name}, #{stu.age}, #{stu.gender})
+        </foreach>
+    </insert>
+```
+
+![image.png](assets/image36.png)
+
+## 7. bind
+
+根据名字模糊查询：
+
+```xml
+    <select id="selectByName" parameterType="com.slz.dynamic.model.Student" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <where>
+            <if test="name!=null and name!=''">
+                and `name` like concat('%',#{name}, '%')
+            </if>
+        </where>
+    </select>
+```
+
+使用 bind 改进：
+
+```xml
+    <select id="selectByNameBind" parameterType="com.slz.dynamic.model.Student" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <bind name="search_name" value="'%'+name+'%'"></bind>
+        <where>
+            <if test="name!=null and name!=''">
+                and `name` like #{search_name}
+            </if>
+        </where>
+    </select>
+```
+
+## 8. sql 片
+
+> ⭐️ 可以将重复的sql片段单独封装在 sql 标签里，并赋予一个标识名，然后在需要用到的地方使用 include 标签通过标识名导入该代码片段；
+
+```xml
+    <sql id="selectAll">
+        select * from student where age>18
+    </sql>
+    <select id="count" resultType="long">
+        select count(*) from
+        <trim prefix="(" suffix=") as ss">
+            <include refid="selectAll"></include>
+        </trim>
+    </select>
+```
+
+![image.png](assets/image39.png)
+
+## 9. 使用注解实现 sql 动态拼接
+
+方式1：`<script></script>`包围
+
+```xml
+    @Select("<script>" +
+            "select * from student" +
+            "<where>" +
+            "<if test=\"name!=null and name!=''\">" +
+            "and `name` like #{name}" +
+            "</if>" +
+            "<if test=\"age!=null and age!=0\">" +
+            "and age=#{age}" +
+            "</if>" +
+            "</where>" +
+            "</script>")
+    List<Student> selectByAnnotation(Student student);
+```
+
+方式2：{} 包围
+
+```xml
+    @Select({"<script>",
+            "select * from student",
+            "<where>",
+            "<if test=\"name!=null and name!=''\">",
+            "and `name` like #{name}",
+            "</if>",
+            "<if test=\"age!=null and age!=0\">",
+            "and age=#{age}",
+            "</if>",
+            "</where>",
+            "</script>"})
+    List<Student> selectByAnnotation(Student student);
+```
+
+# 六、Mybatis 处理表的关联关系
+
+## 1. 一对一表关系处理
+
+
+
+
+
+
+
++++++++++++++++++++

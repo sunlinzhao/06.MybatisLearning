@@ -16,6 +16,9 @@
         </environment>
     </environments>
     <mappers>
-        <mapper resource="com/slz/mybatis/mapper/StudentMapper.xml"></mapper>
+<!--     扫描xml   -->
+<!--        <mapper resource="com/slz/project/mapper/StudentMapper.xml"></mapper>-->
+<!--        扫描java类-->
+        <mapper class="com.slz.project.mapper.StudentDao"></mapper>
     </mappers>
 </configuration>

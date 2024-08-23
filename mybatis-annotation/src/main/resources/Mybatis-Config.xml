@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="db.properties"></properties>
+    <!--配置日志-->
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+    </settings>
+    <!-- 配置别名-->
+    <typeAliases>
+<!--        <typeAlias type="com.slz.model.Student" alias="Student"></typeAlias>-->
+        <!--别名就是类名，且不区分大小写-->
+        <package name="com.slz.model"/>
+    </typeAliases>
+    <environments default="dev">
+        <environment id="dev">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="${mysql.driver}"/>
+                <property name="url" value="${mysql.url}"/>
+                <property name="username" value="${mysql.user}"/>
+                <property name="password" value="${mysql.password}"/>
+            </dataSource>
+        </environment>
+<!--        <environment id="prod">-->
+<!--            <transactionManager type=""></transactionManager>-->
+<!--            <dataSource type=""></dataSource>-->
+<!--        </environment>-->
+<!--        <environment id="test">-->
+<!--            <transactionManager type=""></transactionManager>-->
+<!--            <dataSource type=""></dataSource>-->
+<!--        </environment>-->
+    </environments>
+    <mappers>
+<!--        <mapper resource="com/slz/mapper/StudentMapper.xml"></mapper>-->
+        <package name="slz.com.mapper"/>
+<!--        <mapper class="slz.com.mapper.StudentMapper"></mapper>-->
+    </mappers>
+</configuration>
+

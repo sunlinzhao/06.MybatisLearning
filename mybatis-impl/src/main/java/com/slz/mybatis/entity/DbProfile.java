@@ -20,7 +20,7 @@ public class DbProfile {
     @Getter
     private Map<String, Mapper> mappers;
     public void setMappers(Map<String, Mapper> mappers){
-        if(mappers==null)
+        if(this.mappers==null)
             this.mappers=new HashMap<>();
         this.mappers.putAll(mappers);
     }

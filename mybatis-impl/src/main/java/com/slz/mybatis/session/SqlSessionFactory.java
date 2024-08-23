@@ -1,4 +1,4 @@
-package com.slz.mybatis.util;
+package com.slz.mybatis.session;
 
 /**
  * @author : SunLZ

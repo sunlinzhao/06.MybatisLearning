@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slz.dynamic.mapper.StudentMapper">
+    <update id="update" parameterType="com.slz.dynamic.model.Student">
+        update student
+        <set>
+            <if test="name!=null">`name`=#{name},</if>
+            <if test="age!=null and age!=0">age=#{age},</if>
+            <if test="gender!=null">gender=#{gender}</if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="updateTrim" parameterType="com.slz.dynamic.model.Student">
+        update student
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null">`name`=#{name},</if>
+            <if test="age!=null and age!=0">age=#{age},</if>
+            <if test="gender!=null">gender=#{gender}</if>
+        </trim>
+        where id = #{id}
+    </update>
+    <select id="selectCondition" resultType="com.slz.dynamic.model.Student" parameterType="com.slz.dynamic.model.Student">
+            select * from student where 1=1
+            <if test="name!=null and name!=''">
+                and name like '%'#{name}'%'
+            </if>
+            <if test="age!=null and age!=0">
+                and age=#{age}
+            </if>
+            <if test="gender!=null and gender!=''">
+                and gender=#{gender}
+            </if>
+    </select>
+    <select id="selectConditionChoose" resultType="com.slz.dynamic.model.Student">
+            select * from student where 1=1
+            <choose>
+                <when test="name!=null and name!=''">
+                    and name like '%'#{name}'%'
+                </when>
+                <when test="age!=null and age!=0">
+                    and age=#{age}
+                </when>
+                <when test="gender!=null and gender!=''">
+                    and gender=#{gender}
+                </when>
+                <otherwise>
+                    order by age
+                </otherwise>
+            </choose>
+    </select>
+    <select id="selectConditionWhere" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <where>
+            <if test="name!=null and name!=''">
+                and name like '%'#{name}'%'
+            </if>
+            <if test="age!=null and age!=0">
+                and age=#{age}
+            </if>
+            <if test="gender!=null and gender!=''">
+                and gender=#{gender}
+            </if>
+        </where>
+    </select>
+    <select id="selectConditionTrim" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name!=null and name!=''">
+                and name like '%'#{name}'%'
+            </if>
+            <if test="age!=null and age!=0">
+                and age=#{age}
+            </if>
+            <if test="gender!=null and gender!=''">
+                and gender=#{gender}
+            </if>
+        </trim>
+    </select>
+    <delete id="deleteCheck" >
+        delete
+        from student
+        <where>
+            <foreach collection="array" item="id" open="and id in(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where> 
+    </delete>
+    <delete id="deleteCheckOr" >
+        delete
+        from student
+        <where>
+            <foreach collection="array" item="sid" open="and (" close=")" separator="or">
+                id=#{sid}
+            </foreach>
+        </where>
+    </delete>
+    <delete id="deleteCheckList" >
+        delete
+        from student
+        <where>
+            <foreach collection="list" item="sid" open="and (" close=")" separator="or">
+                id=#{sid}
+            </foreach>
+        </where>
+    </delete>
+    <insert id="insertBatch">
+        insert into student values
+        <foreach collection="list" item="stu" separator=",">
+            (default, #{stu.name}, #{stu.age}, #{stu.gender})
+        </foreach>
+    </insert>
+    <select id="selectByName" parameterType="com.slz.dynamic.model.Student" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <where>
+            <if test="name!=null and name!=''">
+                and `name` like concat('%',#{name}, '%')
+            </if>
+        </where>
+    </select>
+    <select id="selectByNameBind" parameterType="com.slz.dynamic.model.Student" resultType="com.slz.dynamic.model.Student">
+        select * from student
+        <bind name="search_name" value="'%'+name+'%'"></bind>
+        <where>
+            <if test="name!=null and name!=''">
+                and `name` like #{search_name}
+            </if>
+        </where>
+    </select>
+    <sql id="selectAll">
+        select * from student where age>18
+    </sql>
+    <select id="count" resultType="long">
+        select count(*) from
+        <trim prefix="(" suffix=") as ss">
+            <include refid="selectAll"></include>
+        </trim>
+    </select>
+</mapper>

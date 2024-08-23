@@ -105,4 +105,115 @@ public interface StudentMapper {
 
 ## 2. 具体实现
 
+见 mybatis-impl 模块
+
+### （1）日志功能
+
+日志功能：
+
+pom.xml
+
+```xml
+      <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+          <version>1.2.7</version>
+      </dependency>
+```
+
+logback.xml（直接放在 resources 下面）
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!--日志格式处理-->
+<configuration
+        xmins="http://ch.qos.logback/xml/ns/logback"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback logback.xsd">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{HH:mm:ss.SSS} %c [%t] - %m%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="c" level="debug" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+    <root leveL="ERROR">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
+```
+
+使用：
+
+![image.png](assets/image26.png)
+
+### （2）注解功能
+
+```xml
+    <mappers>
+<!--     扫描xml   -->
+<!--        <mapper resource="com/slz/project/mapper/StudentMapper.xml"></mapper>-->
+<!--        扫描java类-->
+        <mapper class="com.slz.project.mapper.StudentDao"></mapper>
+    </mappers>
+```
+
+```java
+    private static Map<String, Mapper> getMapperAnnotations(String classPath){
+        // com.slz.project.mapper.StudentDao
+        Map<String, Mapper> mappers = new HashMap<>();
+        try {
+            Class<?> aClass = Class.forName(classPath);
+            Method[] methods = aClass.getMethods();
+            for (Method method : methods) {
+                boolean annotationPresent = method.isAnnotationPresent(Select.class); // 是否被是 Select 注解
+                if(annotationPresent){
+                    Mapper mapper = new Mapper();
+                    Select select = method.getAnnotation(Select.class);
+                    String sql = select.value();
+                    Type genericReturnType = method.getGenericReturnType(); // 获取当前方法返回类型的泛型
+                    if(genericReturnType instanceof ParameterizedType){ // 判断是不是参数化类型（泛型）
+                        ParameterizedType parameterizedType = (ParameterizedType) genericReturnType;
+                        // 获取运行时的实际泛型类型
+                        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                        Class actualTypeArgument = (Class) actualTypeArguments[0];
+                        String name = actualTypeArgument.getName();
+
+                        mapper.setClassName(name).setSqlStatement(sql);
+                    }
+                    String key = method.getDeclaringClass().getName() + "." + method.getName();
+                    mappers.put(key, mapper);
+                }
+            }
+            return mappers;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+```
+
+```java
+public class Test_annotation {
+    public static void main(String[] args) {
+        // 获取资源配置文件 mybatis-config.xml 的输入流
+        InputStream resourceAsStream = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSession sqlSession = new SqlSessionFactoryBuilder().build(resourceAsStream).openSession();
+        StudentDao mapper = sqlSession.getMapper(StudentDao.class);
+        List<Student> students = mapper.selectList();
+        students.forEach(System.out::println);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
 +++++++++++++++++++++++++++

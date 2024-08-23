@@ -2,9 +2,13 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/Mybatis-onetoone.iml" filepath="$PROJECT_DIR$/Mybatis-onetoone.iml" />
       <module fileurl="file://$PROJECT_DIR$/demo.iml" filepath="$PROJECT_DIR$/demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mybatis-annotation.iml" filepath="$PROJECT_DIR$/mybatis-annotation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mybatis-dynamicSql.iml" filepath="$PROJECT_DIR$/mybatis-dynamicSql.iml" />
       <module fileurl="file://$PROJECT_DIR$/mybatis-impl.iml" filepath="$PROJECT_DIR$/mybatis-impl.iml" />
       <module fileurl="file://$PROJECT_DIR$/mybatis-mapper.iml" filepath="$PROJECT_DIR$/mybatis-mapper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mybatix-dao/mybatix-dao.iml" filepath="$PROJECT_DIR$/mybatix-dao/mybatix-dao.iml" />
     </modules>
   </component>
 </project>
