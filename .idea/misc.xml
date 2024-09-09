@@ -13,6 +13,7 @@
         <option value="$PROJECT_DIR$/mybatis-dynamicSql/pom.xml" />
         <option value="$PROJECT_DIR$/Mybatis-onetoone/pom.xml" />
         <option value="$PROJECT_DIR$/mybatis-onetomulti/pom.xml" />
+        <option value="$PROJECT_DIR$/mybatis-generator/pom.xml" />
       </list>
     </option>
   </component>

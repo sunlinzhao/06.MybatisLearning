@@ -1059,11 +1059,343 @@ public class Test {
 
 > 删除 / 更新的级联关系，当关联外键发生变化，自身相应改变
 
+# 七、逆向工程配置及生成
+
+> - maven 依赖配置：https://mvnrepository.com/artifact/org.mybatis.generator/mybatis-generator-maven-plugin/1.4.0
+> - `mybatis-generator-maven-plugin`
+
+## 1. pom.xml 文件配置
+
+> 主要是< build > 标签配置
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.slz.generator</groupId>
+  <artifactId>mybatis-generator</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>mybatis-generator</name>
+  <url>http://maven.apache.org</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis</artifactId>
+      <version>3.5.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.22</version>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.26</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- https://mvnrepository.com/artifact/org.mybatis.generator/mybatis-generator-maven-plugin -->
+          <groupId>org.mybatis.generator</groupId>
+          <artifactId>mybatis-generator-maven-plugin</artifactId>
+          <version>1.4.0</version>
+          <configuration>
+            <!--配置文件的位置-->
+            <configurationFile>src/main/resources/generatorConfig.xml</configurationFile>
+            <verbose>true</verbose>
+            <overwrite>true</overwrite>
+          </configuration>
+        <executions>
+          <execution>
+            <id>Generate MyBatis Artifacts</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.mybatis.generator</groupId>
+            <artifactId>mybatis-generator-core</artifactId>
+            <version>1.4.0</version>
+          </dependency>
+          <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.xml</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+  </build>
+</project>
+
+```
+
+## 2. generatorConfig.xml 配置文件
+
+配置文件模板：https://mybatis.org/generator/configreference/xmlconfig.html，根据需要修改
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <!--配置 mysql 驱动jar包位置-->
+    <classPathEntry location="C:\Users\SunLZ\.m2\repository\mysql\mysql-connector-java\8.0.26\mysql-connector-java-8.0.26.jar"/>
+
+    <context id="MysqlTables" targetRuntime="MyBatis3">
+        <!--配置 mysql 数据库连接-->
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://8.130.102.188:3306/Mybatis?rewriteBatchStatements=true&serverTimeZone=GMT%2B8&useSSL=false"
+                        userId="root"
+                        password="root">
+        </jdbcConnection>
+
+        <javaTypeResolver >
+            <property name="forceBigDecimals" value="false" />
+        </javaTypeResolver>
+
+        <!--配置生成的 model 层-->
+        <javaModelGenerator targetPackage="com.slz.generator.model" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+
+        <!--配置生成的 mapper 层(xml文件)-->
+        <sqlMapGenerator targetPackage="com.slz.generator.mapper"  targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </sqlMapGenerator>
+        <!--配置生成的 mapper 层(java接口)-->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.slz.generator.mapper"  targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </javaClientGenerator>
+
+        <!--配置数据库表-->
+        <table tableName="student"></table>
+
+    </context>
+</generatorConfiguration>
+```
+
+## 3. 运行插件
+
+![image.png](assets/image117.png)
+
+![image.png](assets/image.png)
+
+> 运行结果
+
+```yaml
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.slz.generator:mybatis-generator >-----------------
+[INFO] Building mybatis-generator 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- mybatis-generator-maven-plugin:1.4.0:generate (default-cli) @ mybatis-generator ---
+[INFO] Connecting to the Database
+[INFO] Introspecting table student
+[INFO] Generating Example class for table student
+[INFO] Generating Record class for table student
+[INFO] Generating Mapper Interface for table student
+[INFO] Generating SQL Map for table student
+[INFO] Saving file StudentMapper.xml
+[INFO] Saving file StudentExample.java
+[INFO] Saving file Student.java
+[INFO] Saving file StudentMapper.java
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.398 s
+[INFO] Finished at: 2024-09-09T19:23:34+08:00
+[INFO] ------------------------------------------------------------------------
+
+进程已结束,退出代码0
+
+```
+
+## 4. 用生成的代码实现 增删改查
+
+```java
+public class Test {
+    public static void main(String[] args) throws IOException {
+        SqlSession session = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession();
+        StudentMapper mapper = session.getMapper(StudentMapper.class);
+        Student student = mapper.selectByPrimaryKey(47);
+        System.out.println(student.toString());
+        session.close();
+    }
+}
+```
+
+# 八、Mybatis 缓存问题 ❤️
+
+## 1. 一级缓存
+
+> 一级缓存：查询的结果存在 SqlSession 中，
+>
+> - 随着 SqlSession 关闭，缓存失效；
+> - 调用增加、删除、修改、commit()、close()、clearCache()方法时，清空一级缓存；
+
+![image.png](assets/image115.png)
+
+> 上述第二次查询时就是直接从一级缓存里读数据的；
+>
+> 当在第二次相同的查询之前，调用了 commit()，就会清空一级缓存，则第二次查询仍然向数据库发送并执行 sql 语句；
+
+```java
+public class TestCache {
+    public static void main(String[] args) throws IOException {
+        SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory build = builder.build(Resources.getResourceAsStream("Mybatis-Config.xml"));
+        SqlSession session = build.openSession();
+        StudentMapper mapper = session.getMapper(StudentMapper.class);
+        List<Student> students = mapper.selectByExample(null);
+        students.forEach(System.out::println);
+        System.out.println("-----------------------------------");
+//        session.commit();
+        // 再次查询打印
+        mapper = session.getMapper(StudentMapper.class);
+        students = mapper.selectByExample(null);
+        students.forEach(System.out::println);
+        session.close();
+    }
+}
+```
+
+## 2. 二级缓存
+
+> 二级缓存：查询的结果存在 SqlSessionFactory 中，
+>
+> - 一级缓存只有同一个 session 可以访问到；
+> - 二级缓存可以被不同的 session 访问到；
+> - 适用于数据量较大，且不是实时的数据，如银行交易记录、历史通话记录 ❤️
+
+![image.png](assets/image118.png?t=1725885709024)
+
+### （1）mybatis 打开二级缓存
+
+1. 修改 Mybatis-Config.xml 文件：
+
+```xml
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+```
+
+2. 修改 mapper.xml 文件：
+
+![image.png](assets/image120.png)
+
+> 添加< cache > 标签，就打开二级缓存了；
+
+3. 实体类（model层）需要能被序列化，Serializable 接口；
+
+![image.png](assets/image121.png)
+
+### （2）mybatis 测试二级缓存
+
+```java
+public class TestCache {
+    public static void main(String[] args) throws IOException {
+        SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
+        SqlSessionFactory build = builder.build(Resources.getResourceAsStream("Mybatis-Config.xml"));
+        SqlSession session = build.openSession();
+        StudentMapper mapper = session.getMapper(StudentMapper.class);
+        List<Student> students = mapper.selectByExample(null);
+        students.forEach(System.out::println);
+        session.close();
+
+        System.out.println("-----------------------------------");
+
+        // 再次查询打印
+        session = build.openSession();
+        mapper = session.getMapper(StudentMapper.class);
+        students = mapper.selectByExample(null);
+        students.forEach(System.out::println);
+        session.close();
+
+        System.out.println("-----------------------------------");
+
+        // 再次查询打印
+        session = build.openSession();
+        mapper = session.getMapper(StudentMapper.class);
+        students = mapper.selectByExample(null);
+        students.forEach(System.out::println);
+        session.close();
+    }
+}
+```
 
 
+```yaml
+Created connection 1601687801.
+Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@5f77d0f9]
+==>  Preparing: select id, name, age, gender from student
+==> Parameters: 
+<==    Columns: id, name, age, gender
+<==        Row: 41, 李白, 22, 男
+<==        Row: 42, 李贺, 23, 男
+<==        Row: 43, 李太白, 22, 女
+<==        Row: 44, 李贺, 23, 男
+<==        Row: 47, 李商隐, 50, 男
+<==        Row: 48, 陆游, 22, 女
+<==      Total: 6
+Student(id=41, name=李白, age=22, gender=男)
+Student(id=42, name=李贺, age=23, gender=男)
+Student(id=43, name=李太白, age=22, gender=女)
+Student(id=44, name=李贺, age=23, gender=男)
+Student(id=47, name=李商隐, age=50, gender=男)
+Student(id=48, name=陆游, age=22, gender=女)
+Resetting autocommit to true on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@5f77d0f9]
+Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@5f77d0f9]
+Returned connection 1601687801 to pool.
+-----------------------------------
+As you are using functionality that deserializes object streams, it is recommended to define the JEP-290 serial filter. Please refer to https://docs.oracle.com/pls/topic/lookup?ctx=javase15&id=GUID-8296D8E8-2B93-4B9A-856E-0A65AF9B8C66
+Cache Hit Ratio [com.slz.generator.mapper.StudentMapper]: 0.5
+Student(id=41, name=李白, age=22, gender=男)
+Student(id=42, name=李贺, age=23, gender=男)
+Student(id=43, name=李太白, age=22, gender=女)
+Student(id=44, name=李贺, age=23, gender=男)
+Student(id=47, name=李商隐, age=50, gender=男)
+Student(id=48, name=陆游, age=22, gender=女)
+-----------------------------------
+Cache Hit Ratio [com.slz.generator.mapper.StudentMapper]: 0.6666666666666666
+Student(id=41, name=李白, age=22, gender=男)
+Student(id=42, name=李贺, age=23, gender=男)
+Student(id=43, name=李太白, age=22, gender=女)
+Student(id=44, name=李贺, age=23, gender=男)
+Student(id=47, name=李商隐, age=50, gender=男)
+Student(id=48, name=陆游, age=22, gender=女)
 
+进程已结束,退出代码0
 
+```
 
+其中，后两次查询都命中了二级缓存；
+
+![image.png](assets/image122.png)
+
+> 三次查询的缓存命中率，在运行结果中可以看出来，表示在这几次查询中，这条语句命中了几次二级缓存
 
 
 +++++++++++++++++++

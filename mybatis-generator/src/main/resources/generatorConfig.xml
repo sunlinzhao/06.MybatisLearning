@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <!--配置 mysql 驱动jar包位置-->
+    <classPathEntry location="C:\Users\SunLZ\.m2\repository\mysql\mysql-connector-java\8.0.26\mysql-connector-java-8.0.26.jar"/>
+
+    <context id="MysqlTables" targetRuntime="MyBatis3">
+        <!--配置 mysql 数据库连接-->
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://8.130.102.188:3306/Mybatis?rewriteBatchStatements=true&amp;serverTimeZone=GMT%2B8&amp;useSSL=false"
+                        userId="root"
+                        password="root">
+        </jdbcConnection>
+
+        <javaTypeResolver >
+            <property name="forceBigDecimals" value="false" />
+        </javaTypeResolver>
+
+        <!--配置生成的 model 层-->
+        <javaModelGenerator targetPackage="com.slz.generator.model" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+
+        <!--配置生成的 mapper 层(xml文件)-->
+        <sqlMapGenerator targetPackage="com.slz.generator.mapper"  targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </sqlMapGenerator>
+        <!--配置生成的 mapper 层(java接口)-->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.slz.generator.mapper"  targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </javaClientGenerator>
+
+        <!--配置数据库表-->
+        <table tableName="student"></table>
+
+    </context>
+</generatorConfiguration>
