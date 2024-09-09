@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slz.one.mapper.DriverInfoMapper">
+<!--    <resultMap id="DriverQuery" type="com.slz.one.model.DriverQuery">-->
+<!--        <id property="did" column="did"></id>-->
+<!--        <result property="dtype" column="dtype"></result>-->
+<!--        <association property="person" javaType="com.slz.one.model.Person">-->
+<!--            <id property="pid" column="pid"></id>-->
+<!--            <result property="pname" column="pname"></result>-->
+<!--            <result property="page" column="page"></result>-->
+<!--        </association>-->
+<!--    </resultMap>-->
+    <resultMap id="DriverQuery" type="com.slz.one.model.DriverQuery" autoMapping="true">
+        <association property="person" javaType="com.slz.one.model.Person" autoMapping="true">
+        </association>
+    </resultMap>
+    <select id="selectList" resultMap="DriverQuery">
+        select * from person p join driverinfo d on p.pid = d.pid
+    </select>
+</mapper>

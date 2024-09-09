@@ -879,6 +879,187 @@ public interface StudentMapper {
 
 ## 1. 一对一表关系处理
 
+> java 一般按照细粒度设计；数据库粗粒度设计；这涉及到降低联表查询的概率，因为联表查询性能低于单表查询；
+
+![image.png](assets/image101.png)
+
+### （1）查询
+
+```sql
+select * from person p join driverinfo d on p.pid = d.pid;
+```
+
+![image.png](assets/image102.png)
+
+> 联表查询，返回结果类型处理
+
+#### 1. 新建一个类，用于接收返回结果
+
+- 两个或多个类的属性放在一起到新建的类；
+- 或者采用继承的方式；
+
+```java
+@Data
+public class PersonDriver extends DriverInfo{
+    private int pid;
+    private String pname;
+    private int page;
+
+    @Override
+    public String toString() {
+        return "PersonDriver{" +
+                "pid=" + pid +
+                ", pname='" + pname + '\'' +
+                ", page=" + page +
+                "} " + super.toString();
+    }
+}
+```
+
+```java
+public interface PersonMapper {
+    @Select("select * from person p join driverinfo d on p.pid = d.pid")
+    List<PersonDriver> selectList();
+}
+```
+
+#### 2. mapper.xml 中使用 resultMap 标签配置 ❤️
+
+> 继承 + 组合的方式
+
+```java
+@Data
+public class DriverQuery extends DriverInfo{ // 继承
+    private Person person; // 组合
+
+    @Override
+    public String toString() {
+        return "DriverQuery{" +
+                "person=" + person +
+                "} " + super.toString();
+    }
+}
+```
+
+> 配置 mapper.xml resultMap 标签，结果映射（不能直接使用 DriverQuery 类作为返回结果类型的原因是，该组合类 Person 的属性拿不到）
+
+![image.png](assets/image103.png)
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slz.one.mapper.DriverInfoMapper">
+    <resultMap id="DriverQuery" type="com.slz.one.model.DriverQuery">
+        <id property="did" column="did"></id>
+        <result property="dtype" column="dtype"></result>
+        <association property="person" javaType="com.slz.one.model.Person">
+            <id property="pid" column="pid"></id>
+            <result property="pname" column="pname"></result>
+            <result property="page" column="page"></result>
+        </association>
+    </resultMap>
+    <select id="selectList" resultMap="DriverQuery">
+        select * from person p join driverinfo d on p.pid = d.pid
+    </select>
+</mapper>
+```
+
+![image.png](assets/image104.png)
+
+> 配置自动映射（当属性名和字段名一样是时可以使用）
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slz.one.mapper.DriverInfoMapper">
+    <resultMap id="DriverQuery" type="com.slz.one.model.DriverQuery" autoMapping="true">
+        <association property="person" javaType="com.slz.one.model.Person" autoMapping="true">
+        </association>
+    </resultMap>
+    <select id="selectList" resultMap="DriverQuery">
+        select * from person p join driverinfo d on p.pid = d.pid
+    </select>
+</mapper>
+```
+
+![image.png](assets/image105.png)
+
+## 2. 一对多表关系处理
+
+![image.png](assets/image106.png)
+
+### （2）查询
+
+> 一对多表的联表查询结果使用对象集合List组合到返回了类型中；
+
+![image.png](assets/image107.png)
+
+> mapper.xml 配置，使用 resultMap 标签的 collection 标签；:star:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slz.multi.mapper.TeamMapper">
+    <resultMap id="rTeam" type="com.slz.multi.model.Team">
+        <id property="tid" column="tid"></id>
+        <result property="tname" column="tname"></result>
+        <collection property="players" ofType="com.slz.multi.model.Player" autoMapping="true">
+        </collection>
+    </resultMap>
+    <select id="selectList" resultMap="rTeam">
+        select *
+        from team t
+                 join player p on t.tid = p.tid
+    </select>
+</mapper>
+```
+
+```java
+public class Test {
+    public static void main(String[] args) throws IOException {
+        SqlSession session = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession();
+        TeamMapper mapper = session.getMapper(TeamMapper.class);
+        List<Team> teams = mapper.selectList();
+        teams.forEach(System.out::println);
+        session.close();
+    }
+}
+```
+
+![image.png](assets/image108.png)
+
+## 3. 多对多的表关系处理
+
+![image.png](assets/image109.png)
+
+> - 从老师的角度看，一个老师可以教多个学生，是一对多的关系；
+> - 从学生的角度看，一个学生可以有多个老师，也是一对多的关系；
+> - 从整体来看，这是一个多对多的关系；
+
+所以，在java程序处理角度，其处理逻辑与一对多的处理逻辑是一样的。但是从数据库表设计的角度则需要考虑的就多了。:heart:
+
+### （1）多对多关系的数据库表设计 ❤️
+
+> 为了防止冗余信息的，通常通过添加中间表来解决；:star:
+
+![image.png](assets/image110.png?t=1725870993040)
+
+示例：用户表和角色表
+
+![image.png](assets/image111.png)
+
+![image.png](assets/image112.png?t=1725871751174)
+
+#### a. 主外键关联的删除处理
+
+![image.png](assets/image113.png)
+
+> 删除 / 更新的级联关系，当关联外键发生变化，自身相应改变
+
+
 
 
 

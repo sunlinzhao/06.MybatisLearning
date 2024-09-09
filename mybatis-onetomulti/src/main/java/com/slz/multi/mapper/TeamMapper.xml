@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slz.multi.mapper.TeamMapper">
+    <resultMap id="rTeam" type="com.slz.multi.model.Team">
+        <id property="tid" column="tid"></id>
+        <result property="tname" column="tname"></result>
+        <collection property="players" ofType="com.slz.multi.model.Player" autoMapping="true">
+        </collection>
+    </resultMap>
+    <select id="selectList" resultMap="rTeam">
+        select *
+        from team t
+                 join player p on t.tid = p.tid
+    </select>
+</mapper>
