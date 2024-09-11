@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.slz.generator.mapper.TeamMapper">
+
+    <select id="selectById" resultType="com.slz.generator.model.Team" parameterType="int">
+        select *
+        from team
+        where tid = #{tid}
+    </select>
+    <resultMap id="TeamLazyLoad" type="com.slz.generator.model.Team" autoMapping="true">
+        <collection property="players" column="tid" ofType="com.slz.generator.model.Player"
+                    select="com.slz.generator.mapper.PlayerMapper.selectByTid"
+        fetchType="lazy"></collection>
+    </resultMap>
+    <select id="selectList" resultMap="TeamLazyLoad">
+        select *
+        from team
+    </select>
+</mapper>

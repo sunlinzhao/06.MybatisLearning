@@ -17,6 +17,8 @@
     <file url="file://$PROJECT_DIR$/mybatis-onetomulti/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mybatis-onetoone/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mybatis-onetoone/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mybatis-useAnnotion/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/mybatis-useAnnotion/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mybatix-dao/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/mybatix-dao/src/main/resources" charset="UTF-8" />
   </component>

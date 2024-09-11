@@ -17,6 +17,9 @@
         <!--别名就是类名，且不区分大小写-->
 <!--        <package name="com.slz.dynamic.model"/>-->
 <!--    </typeAliases>-->
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+    </plugins>
     <environments default="dev">
         <environment id="dev">
             <transactionManager type="JDBC"></transactionManager>
@@ -38,7 +41,7 @@
     </environments>
     <mappers>
 <!--        <mapper resource="com/slz/mapper/StudentMapper.xml"></mapper>-->
-        <package name="com.slz.generator.mapper"/>
+        <package name="com.slz.useAnnotion.mapper"/>
 <!--        <mapper class="slz.com.mapper.StudentMapper"></mapper>-->
     </mappers>
 </configuration>

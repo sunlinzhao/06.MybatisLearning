@@ -1346,7 +1346,6 @@ public class TestCache {
 }
 ```
 
-
 ```yaml
 Created connection 1601687801.
 Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@5f77d0f9]
@@ -1397,8 +1396,229 @@ Student(id=48, name=陆游, age=22, gender=女)
 
 > 三次查询的缓存命中率，在运行结果中可以看出来，表示在这几次查询中，这条语句命中了几次二级缓存
 
+# 九、Mybatis 延迟加载
+
+> 对于一对一或者多对一的关系，如 Player 和 Team，在 Player 的属性中有 Team，而有时需要在需要 Team 属性时，再去加载 Team 属性
+
+> MyBatis 的延迟加载（也称为懒加载）主要用于优化数据库查询性能，特别是在处理一对多或多对多关系的数据时。以下是一些常见的应用场景：
+>
+> - 一对多关系：
+>
+> 当一个实体对象关联多个子对象时，如果在某些业务逻辑中并不需要访问这些子对象，那么可以使用延迟加载来避免一开始就加载所有子对象，从而减少初始查询的复杂度和响应时间。
+>
+> - 一对一关系：
+>
+> 在一对一的关系中，如果主对象和从对象并非总是同时使用，那么可以只加载主对象，而当确实需要访问从对象时才进行加载。
+>
+> - 按需加载：
+>
+> 某些情况下，可能只需要部分数据即可完成业务逻辑处理，此时可以利用延迟加载来确保只有真正需要的数据才会被加载进来，这样可以节省不必要的网络传输和内存消耗。
+>
+> - 分步查询：
+>
+> 在进行分步查询或逐步构建数据结构时，延迟加载可以使得系统仅在必要时才发起数据库请求，获取相关联的数据。
+
+![image.png](assets/image125.png)
+
+## 1. 一对一的延迟加载
+
+1. 打开延迟加载配置
+
+> 配置 Mybatis-Config.xml 文件：
+
+```xml
+    <settings>
+        <!--配置日志-->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!-- 打开二级缓存-->
+<!--        <setting name="cacheEnabled" value="true"/>-->
+        <!-- 打开延迟加载-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+    </settings>
+```
+
+2. 关联到属性的查询
+
+```java
+public interface TeamMapper {
+    Team selectById(int tid);
+}
+```
+
+> com.slz.generator.mapper.TeamMapper.selectById
+
+```xml
+    <resultMap id="PlayerLazyLoad" type="com.slz.generator.model.Player" autoMapping="true">
+        <association property="team" column="tid" javaType="com.slz.generator.model.Team"
+                     select="com.slz.generator.mapper.TeamMapper.selectById"
+                     fetchType="lazy"></association>
+    </resultMap>
+    <select id="selectList" resultMap="PlayerLazyLoad">
+        select *
+        from player
+    </select>
+```
+
+> 重点在 `select`
+
+3. 使用验证
+
+> 程序 1 ： 只打印队员姓名，不涉及访问 team 属性
+
+```java
+public class TestLazyLoad {
+    public static void main(String[] args) throws IOException {
+        SqlSession session = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession();
+        PlayerMapper mapper = session.getMapper(PlayerMapper.class);
+        List<Player> players = mapper.selectList();
+        players.forEach((p)->{
+            System.out.println(p.getPname()); // 只打印队员姓名，不涉及访问 team 属性
+        });
+        session.close();
+    }
+}
+```
+
+> 结果 1 ：只执行一句 sql （team 属性延迟加载）
+
+![image.png](assets/image126.png)
+
+> 程序 2： 打印全部属性
+
+```java
+public class TestLazyLoad {
+    public static void main(String[] args) throws IOException {
+        SqlSession session = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession();
+        PlayerMapper mapper = session.getMapper(PlayerMapper.class);
+        List<Player> players = mapper.selectList();
+        players.forEach(System.out::println); // 打印全部属性
+        session.close();
+    }
+}
+```
+
+> 结果 2： 执行了两次sql
+
+![image.png](assets/image130.png)
+
+## 2. 一对多的延迟加载
+
+> Team 对 Player 是一对多
+
+```java
+@Data
+public class Team {
+    private int tid;
+    private String tname;
+    private List<Player> players;
+}
+```
+
+```xml
+    <resultMap id="TeamLazyLoad" type="com.slz.generator.model.Team" autoMapping="true">
+        <collection property="players" column="tid" ofType="com.slz.generator.model.Player"
+                    select="com.slz.generator.mapper.PlayerMapper.selectByTid"
+        fetchType="lazy"></collection>
+    </resultMap>
+    <select id="selectList" resultMap="TeamLazyLoad">
+        select *
+        from team
+    </select>
+```
+
+![image.png](assets/image131.png?t=1726030532858)
+
+![image.png](assets/image132.png)
+
+```java
+public class TestLazyLoadOneToMore {
+    public static void main(String[] args) throws IOException {
+        SqlSession session = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession();
+        TeamMapper mapper = session.getMapper(TeamMapper.class);
+        List<Team> teams = mapper.selectList();
+//        teams.forEach(System.out::println);
+        teams.forEach((t)->{
+            System.out.println(t.getTname());
+        });
+        session.close();
+    }
+}
+```
+
+## 👀️ 使用注解开发
+
+> 当数据库表字段名与对象的属性名对不上时，配置 ResultMap
+
+```java
+public interface StudentMapper {
+    @Results(id="r", value = {
+            @Result(id = true, column = "id", property = "id"),
+            @Result(column = "name", property = "sname"),
+            @Result(column = "age", property = "age"),
+            @Result(column = "gender", property = "gender"),
+    })
+    @Select("select * from student")
+    List<Student> selectList();
+
+    @ResultMap(value = {"r"})
+    @Select("select * from student")
+    List<Student> selectAll();
+}
+```
+
+# 十、mybatis 使用分页插件 pagehelper ⭐️
+
+1. 在 pom.xml 导入依赖：pagehelper
+
+```xml
+    <dependency>
+      <groupId>com.github.pagehelper</groupId>
+      <artifactId>pagehelper</artifactId>
+      <version>5.3.0</version>
+    </dependency>
+```
+
+2. 配置 Mybatis-Config.xml
+
+```xml
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+    </plugins>
+```
+
+3. 使用 pageHelper 插件
+
+```java
+public class TestPageHelper {
+    public static void main(String[] args) throws IOException {
+        // 拿到 Session
+        SqlSession session = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream("Mybatis-Config.xml")).openSession();
+        // 拿到 mapper
+        StudentMapper mapper = session.getMapper(StudentMapper.class);
+        // 配置分页规则，这里获取第2分页，每页有3条数据\
+        // 计算规则
+        // limit x, z
+        // z=pageSize
+        // x = (pageNum -1)*z
+        PageHelper.startPage(2, 3);
+        // 查询数据
+        List<Student> students = mapper.selectList();
+        // 将从查询结果封装到 PageInfo 做分页处理
+        PageInfo<Student> pageInfo = new PageInfo<>(students);
+        // 通过 PageInfo 对象获取到 当前分页信息
+        List<Student> list = pageInfo.getList();
+        // 打印当前分页
+        list.forEach(System.out::println);
+        session.close();
+    }
+}
+```
+
+> 运行启动页面
+
+![image.png](assets/image133.png)
 
 
+> 运行结果
 
-
-+++++++++++++++++++
+![image.png](assets/image135.png)
