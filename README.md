@@ -1164,7 +1164,7 @@ public class Test {
     <context id="MysqlTables" targetRuntime="MyBatis3">
         <!--配置 mysql 数据库连接-->
         <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
-                        connectionURL="jdbc:mysql://8.130.102.188:3306/Mybatis?rewriteBatchStatements=true&serverTimeZone=GMT%2B8&useSSL=false"
+                        connectionURL="jdbc:mysql://localhost:3306/Mybatis?rewriteBatchStatements=true&serverTimeZone=GMT%2B8&useSSL=false"
                         userId="root"
                         password="root">
         </jdbcConnection>
